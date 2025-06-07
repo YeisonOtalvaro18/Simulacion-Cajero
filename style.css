@@ -1,0 +1,226 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.atm-container {
+    background-color: #2c3e50;
+    border-radius: 20px;
+    width: 350px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+
+.screen.active {
+    display: flex;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #ecf0f1;
+    text-align: center;
+}
+
+.display {
+    background-color: #34495e;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.amount {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2ecc71;
+    margin: 10px 0;
+}
+
+input[type="password"], 
+input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    height: 20px;
+    margin: 5px 0;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.key {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.key:hover {
+    background-color: #2980b9;
+}
+
+.special {
+    background-color: #e67e22;
+}
+
+.special:hover {
+    background-color: #d35400;
+}
+
+.menu-options {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+}
+
+.menu-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.menu-btn:hover {
+    background-color: #2980b9;
+}
+
+.quick-amounts {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.quick-amount {
+    background-color: #9b59b6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1;
+    margin: 0 5px;
+}
+
+.quick-amount:hover {
+    background-color: #8e44ad;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.action-btn {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1;
+    margin: 0 5px;
+}
+
+.action-btn:hover {
+    background-color: #27ae60;
+}
+
+.back-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.back-btn:hover {
+    background-color: #c0392b;
+}
+
+#history-list {
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.transaction {
+    background-color: #34495e;
+    border-radius: 5px;
+    padding: 8px;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.credit {
+    color: #2ecc71;
+}
+
+.debit {
+    color: #e74c3c;
+}
+
+#blocked-screen .display {
+    text-align: center;
+}
+
+#countdown {
+    font-size: 1.2rem;
+    color: #f39c12;
+    margin-top: 10px;
+}
