@@ -1,195 +1,338 @@
-// Digamos que este es nuestro usuario "básico"
-const miUsuario = {
+// Datos iniciales
+const usuarioPorDefecto = {
     pin: '1234',
-    saldo: 500000, // Un buen saldo para empezar
+    saldo: 0,
+    transacciones: []
 };
 
-// Cositas para el estado del cajero
-let intentosFallidos = 0;
+// Obtener usuario de localStorage o crear uno nuevo
+let usuarioActual = JSON.parse(localStorage.getItem('atmUsuario')) || usuarioPorDefecto;
+
+// Variables de estado
+let intentos = 0;
 let estaBloqueado = false;
-let cuentaRegresiva;
+let tiempoBloqueo;
+let intervaloCuentaAtras;
 
-// Vamos a buscar los elementos clave de la interfaz
-const todasLasPantallas = document.querySelectorAll('.pantalla');
-const pantallaPin = document.getElementById('pin-view');
-const inputPin = document.getElementById('pin-input');
-const errorPin = document.getElementById('pin-error');
-const botonesTeclado = document.querySelectorAll('.boton-teclado');
-const botonBorrar = document.getElementById('borrar-btn');
-const botonEntrar = document.getElementById('entrar-btn');
+// Elementos del DOM
+const pantallas = document.querySelectorAll('.pantalla');
+const pantallaInsertarTarjeta = document.getElementById('pantalla-insertar-tarjeta');
+const pantallaPin = document.getElementById('pantalla-pin');
+const entradaPin = document.getElementById('entrada-pin');
+const errorPin = document.getElementById('error-pin');
+const botonesTeclado = document.querySelectorAll('.tecla');
+const botonBorrar = document.getElementById('btn-borrar');
+const botonEntrar = document.getElementById('btn-entrar');
 
-const pantallaMenu = document.getElementById('menu-view');
-const botonVerSaldo = document.getElementById('ver-saldo-btn');
-const botonRetirar = document.getElementById('retirar-btn');
-const botonSalir = document.getElementById('salir-btn');
+const pantallaMenu = document.getElementById('pantalla-menu');
+const pantallaSaldo = document.getElementById('pantalla-saldo');
+const cantidadSaldo = document.getElementById('cantidad-saldo');
+const botonVolverSaldo = document.getElementById('btn-volver-saldo');
 
-const pantallaSaldo = document.getElementById('saldo-view');
-const cantidadSaldoDisplay = document.getElementById('cantidad-saldo');
-const botonSaldoVolver = document.getElementById('saldo-volver-btn');
+const pantallaRetirar = document.getElementById('pantalla-retirar');
+const cantidadRetirar = document.getElementById('cantidad-retirar');
+const errorRetirar = document.getElementById('error-retirar');
+const cantidadesRapidas = document.querySelectorAll('.cantidad-rapida');
+const botonConfirmarRetiro = document.getElementById('btn-confirmar-retiro');
+const botonCancelarRetiro = document.getElementById('btn-cancelar-retiro');
 
-const pantallaRetiro = document.getElementById('retiro-view');
-const inputCantidadRetiro = document.getElementById('cantidad-retiro');
-const errorRetiro = document.getElementById('retiro-error');
-const botonesMontosRapidos = document.querySelectorAll('.monto-rapido');
-const botonConfirmarRetiro = document.getElementById('confirmar-retiro-btn');
-const botonCancelarRetiro = document.getElementById('cancelar-retiro-btn');
+const pantallaDepositar = document.getElementById('pantalla-depositar');
+const cantidadDepositar = document.getElementById('cantidad-depositar');
+const errorDepositar = document.getElementById('error-depositar');
+const botonConfirmarDeposito = document.getElementById('btn-confirmar-deposito');
+const botonCancelarDeposito = document.getElementById('btn-cancelar-deposito');
 
-const pantallaBloqueo = document.getElementById('bloqueo-view');
-const displayTiempoEspera = document.getElementById('tiempo-espera');
+const pantallaCambiarPin = document.getElementById('pantalla-cambiar-pin');
+const nuevoPinEntrada = document.getElementById('nuevo-pin');
+const confirmarNuevoPinEntrada = document.getElementById('confirmar-nuevo-pin');
+const errorCambiarPin = document.getElementById('error-cambiar-pin');
+const botonConfirmarCambioPin = document.getElementById('btn-confirmar-cambio-pin');
+const botonCancelarCambioPin = document.getElementById('btn-cancelar-cambio-pin');
 
+const pantallaHistorial = document.getElementById('pantalla-historial');
+const listaHistorial = document.getElementById('lista-historial');
+const botonVolverHistorial = document.getElementById('btn-volver-historial');
 
-// --- Funciones que hacen que esto funcione ---
+const pantallaBloqueada = document.getElementById('pantalla-bloqueada');
+const displayCuentaAtras = document.getElementById('cuenta-atras');
 
-// Para cambiar de pantalla fácilmente
-function mostrarPantalla(pantallaAMostrar) {
-    todasLasPantallas.forEach(p => p.classList.remove('activa'));
-    pantallaAMostrar.classList.add('activa');
+// Botones del menú principal
+const botonSaldo = document.getElementById('btn-saldo');
+const botonRetirar = document.getElementById('btn-retirar');
+const botonDepositar = document.getElementById('btn-depositar');
+const botonCambiarPin = document.getElementById('btn-cambiar-pin');
+const botonHistorial = document.getElementById('btn-historial');
+const botonCerrarSesion = document.getElementById('btn-cerrar-sesion');
+
+// Funciones de ayuda
+function mostrarPantalla(pantalla) {
+    pantallas.forEach(s => s.classList.remove('activa'));
+    pantalla.classList.add('activa');
 }
 
-// Para que el dinero se vea bonito
-function formatoDinero(cantidad) {
+function formatearMoneda(cantidad) {
     return '$' + cantidad.toLocaleString('es-ES');
 }
 
-// Actualizar el saldo en pantalla
-function refrescarSaldo() {
-    cantidadSaldoDisplay.textContent = formatoDinero(miUsuario.saldo);
+function actualizarDisplaySaldo() {
+    cantidadSaldo.textContent = formatearMoneda(usuarioActual.saldo);
 }
 
-// Bloquea la cuenta si fallan mucho el PIN
-function bloquearCaja() {
+function agregarTransaccion(tipo, cantidad) {
+    const transaccion = {
+        tipo,
+        cantidad,
+        fecha: new Date().toLocaleString()
+    };
+    usuarioActual.transacciones.unshift(transaccion);
+    localStorage.setItem('atmUsuario', JSON.stringify(usuarioActual));
+}
+
+function mostrarTransacciones() {
+    listaHistorial.innerHTML = '';
+    if (usuarioActual.transacciones.length === 0) {
+        listaHistorial.innerHTML = '<p>No hay movimientos registrados</p>';
+        return;
+    }
+
+    usuarioActual.transacciones.forEach(transaccion => {
+        const elementoTransaccion = document.createElement('div');
+        elementoTransaccion.className = `transaccion ${transaccion.tipo === 'deposit' ? 'credito' : 'debito'}`;
+        
+        const textoTipo = transaccion.tipo === 'deposit' ? 'Depósito' : 'Retiro';
+        const signoCantidad = transaccion.tipo === 'deposit' ? '+' : '-';
+        
+        elementoTransaccion.innerHTML = `
+            <p><strong>${textoTipo}</strong> - ${transaccion.fecha}</p>
+            <p class="${transaccion.tipo === 'deposit' ? 'credito' : 'debito'}">${signoCantidad}$${transaccion.cantidad.toLocaleString()}</p>
+        `;
+        listaHistorial.appendChild(elementoTransaccion);
+    });
+}
+
+function bloquearCuenta() {
     estaBloqueado = true;
-    mostrarPantalla(pantallaBloqueo);
-
+    mostrarPantalla(pantallaBloqueada);
+    
     let segundos = 30;
-    displayTiempoEspera.textContent = `Intenta de nuevo en ${segundos} segundos.`;
-
-    cuentaRegresiva = setInterval(() => {
+    displayCuentaAtras.textContent = `Intente nuevamente en ${segundos} segundos.`;
+    
+    intervaloCuentaAtras = setInterval(() => {
         segundos--;
-        displayTiempoEspera.textContent = `Intenta de nuevo en ${segundos} segundos.`;
-
+        displayCuentaAtras.textContent = `Intente nuevamente en ${segundos} segundos.`;
+        
         if (segundos <= 0) {
-            clearInterval(cuentaRegresiva);
+            clearInterval(intervaloCuentaAtras);
             estaBloqueado = false;
-            intentosFallidos = 0;
+            intentos = 0;
             mostrarPantalla(pantallaPin);
-            inputPin.value = '';
+            entradaPin.value = '';
             errorPin.textContent = '';
         }
     }, 1000);
 }
 
-
-// --- Aquí conectamos los botones a las acciones ---
-
-// El teclado numérico
+// Event Listeners
+// Teclado numérico
 botonesTeclado.forEach(boton => {
     if (boton.dataset.numero) {
         boton.addEventListener('click', () => {
-            if (inputPin.value.length < 4) {
-                inputPin.value += boton.dataset.numero;
+            if (entradaPin.value.length < 4) {
+                entradaPin.value += boton.dataset.numero;
             }
         });
     }
 });
 
-// Botón "Borrar" del PIN
+// Botón borrar
 botonBorrar.addEventListener('click', () => {
-    inputPin.value = '';
+    entradaPin.value = '';
 });
 
-// Botón "Entrar" para el PIN
+// Botón entrar
 botonEntrar.addEventListener('click', () => {
-    if (estaBloqueado) return; // Si está bloqueado, no hacemos nada
-
-    if (inputPin.value.length !== 4) {
-        errorPin.textContent = 'El PIN debe tener 4 números, ¿vale?';
+    if (estaBloqueado) return;
+    
+    if (entradaPin.value.length !== 4) {
+        errorPin.textContent = 'El PIN debe tener 4 dígitos';
         return;
     }
-
-    if (inputPin.value === miUsuario.pin) {
-        intentosFallidos = 0;
+    
+    if (entradaPin.value === usuarioActual.pin) {
+        intentos = 0;
         mostrarPantalla(pantallaMenu);
-        refrescarSaldo(); // Asegurarse de que el saldo esté al día
-        inputPin.value = ''; // Limpiamos por seguridad
+        actualizarDisplaySaldo();
+        entradaPin.value = '';
         errorPin.textContent = '';
     } else {
-        intentosFallidos++;
-        errorPin.textContent = `PIN incorrecto. Te quedan ${3 - intentosFallidos} intentos.`;
-        inputPin.value = '';
-
-        if (intentosFallidos >= 3) {
-            bloquearCaja();
+        intentos++;
+        errorPin.textContent = `PIN incorrecto. Intentos restantes: ${3 - intentos}`;
+        entradaPin.value = '';
+        
+        if (intentos >= 3) {
+            bloquearCuenta();
         }
     }
 });
 
-//Acciones desde el menú principal
-
-botonVerSaldo.addEventListener('click', () => {
+// Menú principal
+botonSaldo.addEventListener('click', () => {
     mostrarPantalla(pantallaSaldo);
-    refrescarSaldo();
+    actualizarDisplaySaldo();
 });
 
 botonRetirar.addEventListener('click', () => {
-    mostrarPantalla(pantallaRetiro);
-    inputCantidadRetiro.value = ''; //Limpiamos el campo
-    errorRetiro.textContent = '';
+    mostrarPantalla(pantallaRetirar);
+    cantidadRetirar.value = '';
+    errorRetirar.textContent = '';
 });
 
-botonSalir.addEventListener('click', () => {
+botonDepositar.addEventListener('click', () => {
+    mostrarPantalla(pantallaDepositar);
+    cantidadDepositar.value = '';
+    errorDepositar.textContent = '';
+});
+
+botonCambiarPin.addEventListener('click', () => {
+    mostrarPantalla(pantallaCambiarPin);
+    nuevoPinEntrada.value = '';
+    confirmarNuevoPinEntrada.value = '';
+    errorCambiarPin.textContent = '';
+});
+
+botonHistorial.addEventListener('click', () => {
+    mostrarPantalla(pantallaHistorial);
+    mostrarTransacciones();
+});
+
+botonCerrarSesion.addEventListener('click', () => {
     mostrarPantalla(pantallaPin);
-    inputPin.value = ''; //Y limpiamos el PIN
+    entradaPin.value = '';
 });
 
-
-//Manejo de la pantalla de saldo
-
-botonSaldoVolver.addEventListener('click', () => {
+// Botones de volver
+botonVolverSaldo.addEventListener('click', () => {
     mostrarPantalla(pantallaMenu);
 });
 
-
-//Manejo de la pantalla de retiro
-
-//Botones de montos rápidos
-botonesMontosRapidos.forEach(boton => {
-    boton.addEventListener('click', () => {
-        inputCantidadRetiro.value = boton.dataset.cantidad;
-        errorRetiro.textContent = ''; //Limpiar errores previos
-    });
-});
-
-//Confirmar retiro
-botonConfirmarRetiro.addEventListener('click', () => {
-    const cantidadARetirar = parseFloat(inputCantidadRetiro.value);
-
-    if (isNaN(cantidadARetirar) || cantidadARetirar <= 0) {
-        errorRetiro.textContent = 'Por favor, pon un monto válido y positivo.';
-        return;
-    }
-
-    if (cantidadARetirar > miUsuario.saldo) {
-        errorRetiro.textContent = '¡No tienes tanto dinero!';
-        return;
-    }
-
-    //¡A retirar!
-    miUsuario.saldo -= cantidadARetirar;
-    //Aquí podríamos guardar esto en algún lado, pero por ahora lo dejamos simple.
-    
-    mostrarPantalla(pantallaMenu);
-    refrescarSaldo(); //Para que el saldo se vea actualizado en el menú
-});
-
-// Cancelar retiro
 botonCancelarRetiro.addEventListener('click', () => {
     mostrarPantalla(pantallaMenu);
 });
 
-
-//Lo que pasa cuando la página carga
-document.addEventListener('DOMContentLoaded', () => {
-    mostrarPantalla(pantallaPin); //Empezamos en la pantalla de PIN
-    
+botonCancelarDeposito.addEventListener('click', () => {
+    mostrarPantalla(pantallaMenu);
 });
+
+botonCancelarCambioPin.addEventListener('click', () => {
+    mostrarPantalla(pantallaMenu);
+});
+
+botonVolverHistorial.addEventListener('click', () => {
+    mostrarPantalla(pantallaMenu);
+});
+
+// Montos rápidos
+cantidadesRapidas.forEach(boton => {
+    boton.addEventListener('click', () => {
+        const cantidad = boton.dataset.cantidad;
+        if (cantidadRetirar) {
+            cantidadRetirar.value = cantidad;
+        }
+        if (cantidadDepositar) {
+            cantidadDepositar.value = cantidad;
+        }
+    });
+});
+
+// Retirar dinero
+botonConfirmarRetiro.addEventListener('click', () => {
+    const cantidad = parseFloat(cantidadRetirar.value);
+    
+    if (isNaN(cantidad)) {
+        errorRetirar.textContent = 'Ingrese un monto válido';
+        return;
+    }
+
+    if (cantidad <= 0) {
+        errorRetirar.textContent = 'El monto debe ser positivo';
+        return;
+    }
+    
+    if (cantidad > usuarioActual.saldo) {
+        errorRetirar.textContent = 'Saldo insuficiente';
+        return;
+    }
+    
+    usuarioActual.saldo -= cantidad;
+    agregarTransaccion('withdrawal', cantidad);
+    localStorage.setItem('atmUsuario', JSON.stringify(usuarioActual));
+    
+    mostrarPantalla(pantallaMenu);
+    actualizarDisplaySaldo();
+});
+
+// Depositar dinero
+botonConfirmarDeposito.addEventListener('click', () => {
+    const cantidad = parseFloat(cantidadDepositar.value);
+    
+    if (isNaN(cantidad)) {
+        errorDepositar.textContent = 'Ingrese un monto válido';
+        return;
+    }
+    
+    if (cantidad <= 0) {
+        errorDepositar.textContent = 'El monto debe ser positivo';
+        return;
+    }
+    
+    usuarioActual.saldo += cantidad;
+    agregarTransaccion('deposit', cantidad);
+    localStorage.setItem('atmUsuario', JSON.stringify(usuarioActual));
+    
+    mostrarPantalla(pantallaMenu);
+    actualizarDisplaySaldo();
+});
+
+// Cambiar PIN
+botonConfirmarCambioPin.addEventListener('click', () => {
+    const nuevoPin = nuevoPinEntrada.value;
+    const confirmarPin = confirmarNuevoPinEntrada.value;
+    
+    if (nuevoPin.length !== 4 || confirmarPin.length !== 4) {
+        errorCambiarPin.textContent = 'El PIN debe tener 4 dígitos';
+        return;
+    }
+    
+    if (nuevoPin !== confirmarPin) {
+        errorCambiarPin.textContent = 'Los PINs no coinciden';
+        return;
+    }
+    
+    if (!/^\d+$/.test(nuevoPin)) {
+        errorCambiarPin.textContent = 'El PIN solo puede contener números';
+        return;
+    }
+    
+    usuarioActual.pin = nuevoPin;
+    localStorage.setItem('atmUsuario', JSON.stringify(usuarioActual));
+    
+    errorCambiarPin.textContent = '';
+    errorCambiarPin.style.color = '#2ecc71';
+    errorCambiarPin.textContent = 'PIN cambiado exitosamente';
+    
+    setTimeout(() => {
+        mostrarPantalla(pantallaMenu);
+    }, 1500);
+});
+
+// Inicialización de la simulación de tarjeta
+function inicializarCajero() {
+    mostrarPantalla(pantallaInsertarTarjeta); // Mostrar la pantalla de insertar tarjeta primero
+    setTimeout(() => {
+        mostrarPantalla(pantallaPin); // Después de 2.5 segundos, mostrar la pantalla del PIN
+        actualizarDisplaySaldo(); // Asegúrate de que el balance se actualice al inicio si es necesario
+    }, 2500); // 2500 milisegundos = 2.5 segundos
+}
+
+// Llama a la función de inicialización cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', inicializarCajero);

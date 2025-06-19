@@ -3,75 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Cajero Sencillo</title>
+    <title>Cajero Automático</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="cajero-app">
-        <div id="pin-view" class="pantalla activa">
-            <h1>Bienvenido al Cajero</h1>
-            <div class="info-pantalla">Ingresa tu PIN</div>
-            <input type="password" id="pin-input" maxlength="4" placeholder="****">
-            <div id="pin-error" class="mensaje-error"></div>
+    <div class="contenedor-cajero">
+        <div id="pantalla-insertar-tarjeta" class="pantalla activa">
+            <h1>Cajero Automático</h1>
+            <div class="display">
+                <p>Por favor, inserte su tarjeta</p>
+                <div class="ranura-tarjeta"></div>
+            </div>
+        </div>
+
+        <div id="pantalla-pin" class="pantalla">
+            <h1>Cajero Automático</h1>
+            <div class="display">Ingrese su PIN</div>
+            <input type="password" id="entrada-pin" maxlength="4" placeholder="****">
+            <div id="error-pin" class="mensaje-error"></div>
             <div class="teclado">
-                <button class="boton-teclado" data-numero="1">1</button>
-                <button class="boton-teclado" data-numero="2">2</button>
-                <button class="boton-teclado" data-numero="3">3</button>
-                <button class="boton-teclado" data-numero="4">4</button>
-                <button class="boton-teclado" data-numero="5">5</button>
-                <button class="boton-teclado" data-numero="6">6</button>
-                <button class="boton-teclado" data-numero="7">7</button>
-                <button class="boton-teclado" data-numero="8">8</button>
-                <button class="boton-teclado" data-numero="9">9</button>
-                <button class="boton-teclado" data-numero="0">0</button>
-                <button id="borrar-btn" class="boton-teclado especial">Borrar</button>
-                <button id="entrar-btn" class="boton-teclado especial">Entrar</button>
+                <button class="tecla" data-numero="1">1</button>
+                <button class="tecla" data-numero="2">2</button>
+                <button class="tecla" data-numero="3">3</button>
+                <button class="tecla" data-numero="4">4</button>
+                <button class="tecla" data-numero="5">5</button>
+                <button class="tecla" data-numero="6">6</button>
+                <button class="tecla" data-numero="7">7</button>
+                <button class="tecla" data-numero="8">8</button>
+                <button class="tecla" data-numero="9">9</button>
+                <button class="tecla" data-numero="0">0</button>
+                <button id="btn-borrar" class="tecla especial">Borrar</button>
+                <button id="btn-entrar" class="tecla especial">Entrar</button>
             </div>
         </div>
 
-        <div id="menu-view" class="pantalla">
-            <h1>Opciones Principales</h1>
-            <div class="info-pantalla">¿Qué quieres hacer?</div>
+        <div id="pantalla-menu" class="pantalla">
+            <h1>Menú Principal</h1>
+            <div class="display">Seleccione una opción</div>
             <div class="opciones-menu">
-                <button id="ver-saldo-btn" class="boton-menu">Ver mi Saldo</button>
-                <button id="retirar-btn" class="boton-menu">Sacar Dinero</button>
-                <button id="salir-btn" class="boton-menu">Cerrar Sesión</button>
+                <button id="btn-saldo" class="btn-menu">Ver Saldo</button>
+                <button id="btn-retirar" class="btn-menu">Retirar Dinero</button>
+                <button id="btn-depositar" class="btn-menu">Depositar Dinero</button>
+                <button id="btn-cambiar-pin" class="btn-menu">Cambiar PIN</button>
+                <button id="btn-historial" class="btn-menu">Historial</button>
+                <button id="btn-cerrar-sesion" class="btn-menu">Cerrar Sesión</button>
             </div>
         </div>
 
-        <div id="saldo-view" class="pantalla">
-            <h1>Tu Saldo</h1>
-            <div class="info-pantalla">
-                <p>Dinero disponible:</p>
-                <p id="cantidad-saldo" class="monto">$0</p>
+        <div id="pantalla-saldo" class="pantalla">
+            <h1>Consulta de Saldo</h1>
+            <div class="display">
+                <p>Saldo disponible:</p>
+                <p id="cantidad-saldo" class="cantidad">$0</p>
             </div>
-            <button id="saldo-volver-btn" class="boton-volver">Volver al Menú</button>
+            <button id="btn-volver-saldo" class="btn-volver">Volver al Menú</button>
         </div>
 
-        <div id="retiro-view" class="pantalla">
+        <div id="pantalla-retirar" class="pantalla">
             <h1>Retiro de Dinero</h1>
-            <div class="info-pantalla">
-                <p>¿Cuánto quieres retirar?</p>
-                <input type="number" id="cantidad-retiro" placeholder="Monto">
-                <div id="retiro-error" class="mensaje-error"></div>
-                <div class="montos-rapidos">
-                    <button class="monto-rapido" data-cantidad="20000">$20,000</button>
-                    <button class="monto-rapido" data-cantidad="50000">$50,000</button>
-                    <button class="monto-rapido" data-cantidad="100000">$100,000</button>
+            <div class="display">
+                <p>Ingrese la cantidad a retirar:</p>
+                <input type="number" id="cantidad-retirar" placeholder="Monto">
+                <div id="error-retirar" class="mensaje-error"></div>
+                <div class="cantidades-rapidas">
+                    <button class="cantidad-rapida" data-cantidad="10000">$10,000</button>
+                    <button class="cantidad-rapida" data-cantidad="20000">$20,000</button>
+                    <button class="cantidad-rapida" data-cantidad="50000">$50,000</button>
+                    <button class="cantidad-rapida" data-cantidad="100000">$100,000</button>
                 </div>
             </div>
             <div class="botones-accion">
-                <button id="confirmar-retiro-btn" class="boton-accion">Confirmar</button>
-                <button id="cancelar-retiro-btn" class="boton-volver">Cancelar</button>
+                <button id="btn-confirmar-retiro" class="btn-accion">Confirmar</button>
+                <button id="btn-cancelar-retiro" class="btn-volver">Cancelar</button>
             </div>
         </div>
 
-        <div id="bloqueo-view" class="pantalla">
-            <h1>¡Cuenta Bloqueada!</h1>
-            <div class="info-pantalla">
-                <p>Demasiados intentos incorrectos.</p>
-                <p>Tu cuenta está bloqueada por seguridad.</p>
-                <p id="tiempo-espera">Intenta de nuevo en 30 segundos.</p>
+        <div id="pantalla-depositar" class="pantalla">
+            <h1>Depósito de Dinero</h1>
+            <div class="display">
+                <p>Ingrese la cantidad a depositar:</p>
+                <input type="number" id="cantidad-depositar" placeholder="Monto">
+                <div id="error-depositar" class="mensaje-error"></div>
+                <div class="cantidades-rapidas">
+                    <button class="cantidad-rapida" data-cantidad="10000">$10,000</button>
+                    <button class="cantidad-rapida" data-cantidad="20000">$20,000</button>
+                    <button class="cantidad-rapida" data-cantidad="50000">$50,000</button>
+                    <button class="cantidad-rapida" data-cantidad="100000">$100,000</button>
+                </div>
+            </div>
+            <div class="botones-accion">
+                <button id="btn-confirmar-deposito" class="btn-accion">Confirmar</button>
+                <button id="btn-cancelar-deposito" class="btn-volver">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="pantalla-cambiar-pin" class="pantalla">
+            <h1>Cambiar PIN</h1>
+            <div class="display">
+                <p>Ingrese su nuevo PIN (4 dígitos):</p>
+                <input type="password" id="nuevo-pin" maxlength="4" placeholder="Nuevo PIN">
+                <p>Confirme su nuevo PIN:</p>
+                <input type="password" id="confirmar-nuevo-pin" maxlength="4" placeholder="Confirmar PIN">
+                <div id="error-cambiar-pin" class="mensaje-error"></div>
+            </div>
+            <div class="botones-accion">
+                <button id="btn-confirmar-cambio-pin" class="btn-accion">Confirmar</button>
+                <button id="btn-cancelar-cambio-pin" class="btn-volver">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="pantalla-historial" class="pantalla">
+            <h1>Historial de Movimientos</h1>
+            <div class="display">
+                <div id="lista-historial"></div>
+            </div>
+            <button id="btn-volver-historial" class="btn-volver">Volver al Menú</button>
+        </div>
+
+        <div id="pantalla-bloqueada" class="pantalla">
+            <h1>Cuenta Bloqueada</h1>
+            <div class="display">
+                <p>Ha excedido el número máximo de intentos.</p>
+                <p>Por seguridad, su cuenta ha sido bloqueada temporalmente.</p>
+                <p id="cuenta-atras">Intente nuevamente en 30 segundos.</p>
             </div>
         </div>
     </div>
